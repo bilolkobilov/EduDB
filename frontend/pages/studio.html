@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio - EduDB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tomorrow-night-blue.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="/" class="text-3xl font-bold">
+                        <span class="text-blue-600">Edu</span><span class="text-purple-600">DB</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="text-gray-600 hover:text-gray-800 transition">Home</a>
+                    <a href="/setup" class="text-gray-600 hover:text-gray-800 transition">Setup</a>
+                    <a href="/studio" class="text-gray-800 font-semibold border-b-2 border-blue-600">Studio</a>
+                    <a href="/exercises" class="text-gray-600 hover:text-gray-800 transition">Exercises</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Module Progress Bar -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-sm font-semibold text-gray-700">
+                    <span id="current-module-title">Module 1 of 15: Database Basics</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="prev-module" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+                        ← Previous
+                    </button>
+                    <button id="next-module" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                        Next →
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 6.67%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="container mx-auto px-6 py-6">
+        <div class="grid grid-cols-12 gap-6" style="height: calc(100vh - 250px);">
+            <!-- Left Panel: Database Tables -->
+            <div class="col-span-4 bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 flex-shrink-0">
+                    <h3 class="font-bold text-lg">Database Tables</h3>
+                </div>
+                
+                <!-- Table Tabs -->
+                <div class="flex border-b flex-shrink-0">
+                    <button class="table-tab active px-4 py-2 font-semibold text-sm border-b-2 border-blue-600 text-blue-600" data-table="students">
+                        Students
+                    </button>
+                    <button class="table-tab px-4 py-2 font-semibold text-sm text-gray-600 hover:text-gray-800" data-table="teachers">
+                        Teachers
+                    </button>
+                    <button class="table-tab px-4 py-2 font-semibold text-sm text-gray-600 hover:text-gray-800" data-table="courses">
+                        Courses
+                    </button>
+                    <button class="table-tab px-4 py-2 font-semibold text-sm text-gray-600 hover:text-gray-800" data-table="enrollments">
+                        Enrollments
+                    </button>
+                </div>
+                
+                <!-- Table Content -->
+                <div id="table-container" class="flex-1 overflow-auto p-4">
+                    <div class="text-center text-gray-500 py-8">
+                        <div class="spinner mx-auto mb-3"></div>
+                        <p>Loading table data...</p>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="border-t p-4 flex space-x-2 flex-shrink-0">
+                    <button id="add-record-btn" class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-sm font-semibold">
+                        + Add New Record
+                    </button>
+                    <button id="reset-db-btn" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition text-sm font-semibold">
+                        Reset Database
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Learning Content (Tabbed Interface) -->
+            <div class="col-span-8 flex flex-col">
+                <!-- Tab Navigation -->
+                <div class="bg-white rounded-t-lg shadow-lg flex border-b justify-between items-center">
+                    <div class="flex flex-1">
+                        <button class="content-tab active flex-1 px-4 py-3 font-semibold text-sm border-b-2 border-purple-600 text-purple-600 hover:bg-gray-50 transition" data-tab="explanation">
+                            📚 Database Basics
+                        </button>
+                    <button class="content-tab flex-1 px-4 py-3 font-semibold text-sm text-gray-600 hover:bg-gray-50 transition" data-tab="python">
+                        🐍 Python Code
+                    </button>
+                    <button class="content-tab flex-1 px-4 py-3 font-semibold text-sm text-gray-600 hover:bg-gray-50 transition" data-tab="sql">
+                        💾 SQL Query
+                    </button>
+                    <button class="content-tab flex-1 px-4 py-3 font-semibold text-sm text-gray-600 hover:bg-gray-50 transition" data-tab="output">
+                        ✅ Output & Result
+                    </button>
+                    </div>
+                    <button id="close-live-coding" class="hidden px-4 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 transition rounded-r-lg" title="Close Live Coding">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Tab Content Container -->
+                <div class="bg-white rounded-b-lg shadow-lg flex-1 overflow-hidden flex flex-col">
+                    <!-- Database Basics Tab -->
+                    <div id="tab-explanation" class="tab-content active flex-1 overflow-auto p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4" id="explanation-title">Module Explanation</h3>
+                        <div id="explanation-content" class="prose max-w-none">
+                            <p class="text-gray-500">Select a module to see its explanation...</p>
+                        </div>
+                    </div>
+
+                    <!-- Python Code Tab -->
+                    <div id="tab-python" class="tab-content hidden flex-1 flex flex-col">
+                        <div class="flex justify-between items-center px-4 py-2 bg-blue-50 border-b">
+                            <div class="flex items-center">
+                                <span class="text-sm font-semibold text-blue-900">Python Implementation</span>
+                                <span id="python-operation-label" class="hidden ml-3 text-xs bg-blue-600 text-white px-2 py-1 rounded">Code for: Operation</span>
+                            </div>
+                            <button class="copy-code-btn text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                                📋 Copy Code
+                            </button>
+                        </div>
+                        <div id="python-code" class="flex-1 overflow-auto">
+                            <pre><code class="language-python p-4 text-sm">
+# Python code will appear here when you interact with the database
+# Try clicking Edit, Delete, or Add buttons on any table record
+
+import mysql.connector
+
+# Connect to database
+connection = mysql.connector.connect(
+    host='localhost',
+    user='root',
+    password='your_password',
+    database='edudb'
+)
+cursor = connection.cursor()
+
+# Your queries will appear here...
+                            </code></pre>
+                        </div>
+                    </div>
+
+                    <!-- SQL Query Tab -->
+                    <div id="tab-sql" class="tab-content hidden flex-1 flex flex-col">
+                        <div class="flex justify-between items-center px-4 py-2 bg-green-50 border-b">
+                            <div class="flex items-center">
+                                <span class="text-sm font-semibold text-green-900">SQL Statement</span>
+                                <span id="sql-operation-label" class="hidden ml-3 text-xs bg-green-600 text-white px-2 py-1 rounded">Code for: Operation</span>
+                            </div>
+                            <button class="copy-sql-btn text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                                📋 Copy SQL
+                            </button>
+                        </div>
+                        <div id="sql-query" class="flex-1 overflow-auto">
+                            <pre><code class="language-sql p-4 text-sm">
+-- SQL query will appear here when you interact with the database
+-- The SQL shows exactly what database operation is being performed
+
+SELECT * FROM students;
+                            </code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Output/Result Tab -->
+                    <div id="tab-output" class="tab-content hidden flex-1 overflow-auto p-4">
+                        <div id="output-result">
+                            <p class="text-gray-500">Query results will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Edit/Add Record -->
+    <div id="record-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center modal-backdrop">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 modal-content">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-t-lg">
+                <h3 class="text-xl font-bold" id="modal-title">Edit Record</h3>
+            </div>
+            <div id="modal-body" class="p-6 max-h-96 overflow-y-auto">
+                <!-- Form fields will be dynamically generated -->
+            </div>
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+                <button id="modal-cancel" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition">
+                    Cancel
+                </button>
+                <button id="modal-save" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed top-20 right-6 bg-white shadow-lg rounded-lg p-4 z-50 toast max-w-sm">
+        <div class="flex items-center">
+            <div id="toast-icon" class="mr-3"></div>
+            <div>
+                <p id="toast-message" class="text-sm font-semibold"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/modules.js"></script>
+    <script src="/static/js/studio.js"></script>
+    <script>
+        // Initialize syntax highlighting
+        hljs.highlightAll();
+    </script>
+</body>
+</html>

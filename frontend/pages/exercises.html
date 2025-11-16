@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercises - EduDB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="/" class="text-3xl font-bold">
+                        <span class="text-blue-600">Edu</span><span class="text-purple-600">DB</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="text-gray-600 hover:text-gray-800 transition">Home</a>
+                    <a href="/setup" class="text-gray-600 hover:text-gray-800 transition">Setup</a>
+                    <a href="/studio" class="text-gray-600 hover:text-gray-800 transition">Studio</a>
+                    <a href="/exercises" class="text-gray-800 font-semibold border-b-2 border-blue-600">Exercises</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-4xl font-bold mb-2">Practice Exercises</h1>
+            <p class="text-blue-100">Test your knowledge with questions at three difficulty levels</p>
+        </div>
+    </div>
+
+    <!-- Level Selection (Initial View) -->
+    <div id="level-selection" class="container mx-auto px-6 py-12">
+        <h2 class="text-2xl font-bold text-center mb-8">Choose Your Difficulty Level</h2>
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <!-- Beginner -->
+            <div class="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-4xl">🌱</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Beginner</h3>
+                    <p class="text-gray-600 mb-4">15 questions covering SQL basics</p>
+                    <div class="text-sm text-gray-500 mb-6">
+                        <div class="flex items-center justify-center mb-1">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+                            </svg>
+                            <span>Multiple choice & fill-in-blank</span>
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                            </svg>
+                            <span>~15-20 minutes</span>
+                        </div>
+                    </div>
+                    <button class="start-level-btn w-full bg-green-600 text-white font-semibold py-3 px-6 rounded hover:bg-green-700 transition" data-level="beginner">
+                        Start Beginner
+                    </button>
+                    <div id="beginner-score" class="mt-3 text-sm hidden">
+                        <span class="font-semibold">Best Score:</span> <span class="text-green-600"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intermediate -->
+            <div class="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-4xl">💪</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Intermediate</h3>
+                    <p class="text-gray-600 mb-4">15 questions on joins & queries</p>
+                    <div class="text-sm text-gray-500 mb-6">
+                        <div class="flex items-center justify-center mb-1">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+                            </svg>
+                            <span>Write SQL queries</span>
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                            </svg>
+                            <span>~25-30 minutes</span>
+                        </div>
+                    </div>
+                    <button class="start-level-btn w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded hover:bg-blue-700 transition" data-level="intermediate" id="intermediate-btn" disabled>
+                        🔒 Complete Beginner First
+                    </button>
+                    <div id="intermediate-score" class="mt-3 text-sm hidden">
+                        <span class="font-semibold">Best Score:</span> <span class="text-blue-600"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced -->
+            <div class="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-4xl">🚀</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Advanced</h3>
+                    <p class="text-gray-600 mb-4">15 complex optimization questions</p>
+                    <div class="text-sm text-gray-500 mb-6">
+                        <div class="flex items-center justify-center mb-1">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+                            </svg>
+                            <span>Complex queries & scenarios</span>
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                            </svg>
+                            <span>~35-45 minutes</span>
+                        </div>
+                    </div>
+                    <button class="start-level-btn w-full bg-purple-600 text-white font-semibold py-3 px-6 rounded hover:bg-purple-700 transition" data-level="advanced" id="advanced-btn" disabled>
+                        🔒 Complete Intermediate First
+                    </button>
+                    <div id="advanced-score" class="mt-3 text-sm hidden">
+                        <span class="font-semibold">Best Score:</span> <span class="text-purple-600"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Area (Hidden Initially) -->
+    <div id="quiz-area" class="hidden container mx-auto px-6 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold text-gray-700">
+                        <span id="current-level">Beginner</span> Level | Question <span id="current-q">1</span> of <span id="total-q">15</span>
+                    </span>
+                    <span class="text-sm font-semibold text-gray-700">
+                        Score: <span id="current-score">0</span>/<span id="total-q-score">15</span> (<span id="percent-score">0</span>%)
+                    </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="quiz-progress" class="bg-blue-600 h-3 rounded-full transition-all" style="width: 6.67%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4" id="question-text">Question text here...</h3>
+                
+                <!-- Answer Area -->
+                <div id="answer-area" class="mb-6">
+                    <!-- Will be dynamically populated based on question type -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-3">
+                    <button id="submit-answer-btn" class="flex-1 bg-blue-600 text-white font-semibold py-3 px-6 rounded hover:bg-blue-700 transition">
+                        Submit Answer
+                    </button>
+                    <button id="hint-btn" class="bg-yellow-500 text-white font-semibold py-3 px-6 rounded hover:bg-yellow-600 transition">
+                        Hint (<span id="hints-remaining">3</span>)
+                    </button>
+                    <button id="skip-btn" class="bg-gray-400 text-white font-semibold py-3 px-6 rounded hover:bg-gray-500 transition">
+                        Skip
+                    </button>
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="mt-6 hidden">
+                    <!-- Feedback will appear here -->
+                </div>
+            </div>
+
+            <!-- Progress Tracker Sidebar -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h4 class="font-bold text-gray-800 mb-4">Question Progress</h4>
+                <div id="progress-tracker" class="grid grid-cols-15 gap-2">
+                    <!-- Progress dots will be generated dynamically -->
+                </div>
+                <div class="mt-4 text-xs text-gray-600">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-green-500 rounded-full mr-1"></div>
+                            <span>Correct</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-red-500 rounded-full mr-1"></div>
+                            <span>Incorrect</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gray-300 rounded-full mr-1"></div>
+                            <span>Not Attempted</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-blue-500 rounded-full mr-1"></div>
+                            <span>Current</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen (Hidden Initially) -->
+    <div id="results-screen" class="hidden container mx-auto px-6 py-12">
+        <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-2xl p-12 text-center">
+            <div id="results-icon" class="text-8xl mb-6"></div>
+            <h2 class="text-4xl font-bold text-gray-800 mb-4" id="results-title">Level Complete!</h2>
+            <div class="mb-8">
+                <p class="text-6xl font-bold text-blue-600 mb-2" id="final-score">12/15</p>
+                <p class="text-xl text-gray-600" id="final-percentage">(80%)</p>
+            </div>
+            
+            <div id="pass-message" class="hidden bg-green-50 border border-green-200 rounded p-6 mb-6">
+                <p class="text-green-800 font-semibold text-lg">
+                    ✓ Excellent! You can move to the next level.
+                </p>
+            </div>
+            
+            <div id="fail-message" class="hidden bg-yellow-50 border border-yellow-200 rounded p-6 mb-6">
+                <p class="text-yellow-800 font-semibold text-lg">
+                    You need 80% to advance. Review the Studio lessons and try again!
+                </p>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button id="try-again-btn" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded hover:bg-blue-700 transition">
+                    Try Again
+                </button>
+                <button id="next-level-btn" class="hidden bg-green-600 text-white font-semibold py-3 px-8 rounded hover:bg-green-700 transition">
+                    Next Level →
+                </button>
+                <button id="get-certificate-btn" class="hidden bg-purple-600 text-white font-semibold py-3 px-8 rounded hover:bg-purple-700 transition">
+                    🎓 Get Certificate
+                </button>
+                <a href="/" class="bg-gray-600 text-white font-semibold py-3 px-8 rounded hover:bg-gray-700 transition inline-block">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Modal -->
+    <div id="certificate-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4">
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 rounded-t-lg">
+                <h3 class="text-2xl font-bold">🎓 Congratulations!</h3>
+            </div>
+            <div class="p-8">
+                <p class="text-lg mb-6">You've completed all three levels! Enter your name to generate your certificate:</p>
+                <input type="text" id="certificate-name" placeholder="Enter your full name" class="w-full px-4 py-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-purple-500">
+                <div class="flex justify-end space-x-3">
+                    <button id="cancel-certificate" class="px-6 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition">
+                        Cancel
+                    </button>
+                    <button id="generate-certificate" class="px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">
+                        Generate Certificate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/questions.js"></script>
+    <script src="/static/js/exercises.js"></script>
+</body>
+</html>
