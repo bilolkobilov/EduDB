@@ -135,74 +135,151 @@
     </div>
 
     <!-- Quiz Area (Hidden Initially) -->
-    <div id="quiz-area" class="hidden container mx-auto px-6 py-8">
-        <div class="max-w-4xl mx-auto">
-            <!-- Progress Bar -->
-            <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-semibold text-gray-700">
-                        <span id="current-level">Beginner</span> Level | Question <span id="current-q">1</span> of <span id="total-q">15</span>
-                    </span>
-                    <span class="text-sm font-semibold text-gray-700">
-                        Score: <span id="current-score">0</span>/<span id="total-q-score">15</span> (<span id="percent-score">0</span>%)
-                    </span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div id="quiz-progress" class="bg-blue-600 h-3 rounded-full transition-all" style="width: 6.67%"></div>
-                </div>
-            </div>
-
-            <!-- Question Card -->
-            <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-4" id="question-text">Question text here...</h3>
-                
-                <!-- Answer Area -->
-                <div id="answer-area" class="mb-6">
-                    <!-- Will be dynamically populated based on question type -->
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex space-x-3">
-                    <button id="submit-answer-btn" class="flex-1 bg-blue-600 text-white font-semibold py-3 px-6 rounded hover:bg-blue-700 transition">
-                        Submit Answer
-                    </button>
-                    <button id="hint-btn" class="bg-yellow-500 text-white font-semibold py-3 px-6 rounded hover:bg-yellow-600 transition">
-                        Hint (<span id="hints-remaining">3</span>)
-                    </button>
-                    <button id="skip-btn" class="bg-gray-400 text-white font-semibold py-3 px-6 rounded hover:bg-gray-500 transition">
-                        Skip
-                    </button>
-                </div>
-
-                <!-- Feedback Area -->
-                <div id="feedback-area" class="mt-6 hidden">
-                    <!-- Feedback will appear here -->
-                </div>
-            </div>
-
-            <!-- Progress Tracker Sidebar -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h4 class="font-bold text-gray-800 mb-4">Question Progress</h4>
-                <div id="progress-tracker" class="grid grid-cols-15 gap-2">
-                    <!-- Progress dots will be generated dynamically -->
-                </div>
-                <div class="mt-4 text-xs text-gray-600">
+    <div id="quiz-area" class="hidden min-h-screen bg-gray-50">
+        <!-- Sticky Header -->
+        <div class="bg-white border-b shadow-sm sticky top-0 z-40">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-green-500 rounded-full mr-1"></div>
-                            <span>Correct</span>
+                        <button id="exit-quiz-btn" class="text-gray-600 hover:text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Exit
+                        </button>
+                        <div class="h-6 w-px bg-gray-300"></div>
+                        <span class="text-sm font-semibold text-gray-700">
+                            <span id="current-level" class="text-blue-600">Beginner</span> Level
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                            </svg>
+                            <span id="timer" class="text-sm font-semibold text-gray-700">00:00</span>
                         </div>
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-red-500 rounded-full mr-1"></div>
-                            <span>Incorrect</span>
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+                            </svg>
+                            <span class="text-sm font-semibold text-gray-700">
+                                <span id="current-q">1</span>/<span id="total-q">15</span>
+                            </span>
                         </div>
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-gray-300 rounded-full mr-1"></div>
-                            <span>Not Attempted</span>
+                        <div class="hidden md:flex items-center bg-blue-50 px-4 py-2 rounded-full">
+                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            <span class="text-sm font-bold text-blue-600">
+                                <span id="current-score">0</span>/<span id="total-q-score">15</span>
+                            </span>
                         </div>
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-blue-500 rounded-full mr-1"></div>
-                            <span>Current</span>
+                    </div>
+                </div>
+                <!-- Progress Bar -->
+                <div class="mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="quiz-progress" class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500" style="width: 6.67%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container mx-auto px-6 py-8 max-w-5xl">
+            <div class="grid lg:grid-cols-4 gap-6">
+                <!-- Question Card - Main Area -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <!-- Question Header -->
+                        <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-8 py-6 border-b">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full mb-3">
+                                        Question <span id="q-number">1</span>
+                                    </span>
+                                    <h3 class="text-2xl font-bold text-gray-900 leading-relaxed" id="question-text">Question text here...</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Answer Area -->
+                        <div class="px-8 py-8">
+                            <div id="answer-area" class="space-y-3">
+                                <!-- Will be dynamically populated -->
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="px-8 pb-8">
+                            <div class="flex gap-3">
+                                <button id="submit-answer-btn" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 px-8 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                    <span class="flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Submit Answer
+                                    </span>
+                                </button>
+                                <button id="hint-btn" class="bg-yellow-500 text-white font-semibold py-4 px-6 rounded-lg hover:bg-yellow-600 transition-all duration-200 shadow hover:shadow-lg">
+                                    <span class="flex items-center">
+                                        <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                                        </svg>
+                                        <span id="hints-remaining">3</span>
+                                    </span>
+                                </button>
+                                <button id="skip-btn" class="bg-gray-500 text-white font-semibold py-4 px-6 rounded-lg hover:bg-gray-600 transition-all duration-200 shadow hover:shadow-lg">
+                                    Skip
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Area -->
+                        <div id="feedback-area" class="hidden px-8 pb-8">
+                            <!-- Feedback will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar - Progress Tracker -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                        <h4 class="font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                            </svg>
+                            Progress
+                        </h4>
+                        <div id="progress-tracker" class="grid grid-cols-5 gap-2 mb-4">
+                            <!-- Progress dots -->
+                        </div>
+                        <div class="border-t pt-4">
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-600">Correct</span>
+                                    </div>
+                                    <span id="correct-count" class="font-bold text-green-600">0</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-600">Incorrect</span>
+                                    </div>
+                                    <span id="incorrect-count" class="font-bold text-red-600">0</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
+                                        <span class="text-gray-600">Remaining</span>
+                                    </div>
+                                    <span id="remaining-count" class="font-bold text-gray-600">15</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

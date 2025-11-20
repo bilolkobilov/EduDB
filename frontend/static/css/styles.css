@@ -1,5 +1,30 @@
 /* Custom styles beyond Tailwind CSS */
 
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.animate-slideIn {
+    animation: slideIn 0.4s ease-out;
+}
+
 /* Code block styling */
 .code-block {
     border-radius: 0.5rem;

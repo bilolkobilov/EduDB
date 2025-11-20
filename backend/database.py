@@ -241,60 +241,116 @@ class Database:
             cursor = connection.cursor()
             
             # Read initialization script
-            with open(Config.DATABASE_DIR / 'init_db.sql', 'r') as f:
+            with open(Config.DATABASE_DIR / 'init_db.sql', 'r', encoding='utf-8') as f:
                 sql_script = f.read()
             
-            # Execute each statement, skipping CREATE DATABASE and USE statements
-            statements = sql_script.split(';')
-            for i, statement in enumerate(statements):
-                statement = statement.strip()
-                # Skip empty statements, comments, CREATE DATABASE, and USE statements
-                if not statement or statement.startswith('--'):
+            # Remove comments and split by semicolon
+            lines = sql_script.split('\n')
+            clean_lines = []
+            for line in lines:
+                # Remove inline comments
+                if '--' in line:
+                    line = line[:line.index('--')]
+                clean_lines.append(line)
+            
+            clean_script = '\n'.join(clean_lines)
+            statements = [s.strip() for s in clean_script.split(';') if s.strip()]
+            
+            logger.info(f"Processing {len(statements)} SQL statements from init_db.sql")
+            
+            for i, statement in enumerate(statements, 1):
+                statement_upper = statement.upper()
+                
+                # Skip CREATE DATABASE and USE statements
+                if statement_upper.startswith('CREATE DATABASE') or statement_upper.startswith('USE '):
+                    logger.info(f"Skipping statement #{i}: {statement[:50]}...")
                     continue
                 
-                statement_upper = statement.upper()
-                if statement_upper.startswith('CREATE DATABASE') or statement_upper.startswith('USE '):
-                    logger.info(f"Skipping statement: {statement[:50]}...")
+                # Skip SELECT statements used for displaying messages
+                if statement_upper.startswith('SELECT') and ('AS STATUS' in statement_upper or 'AS INFO' in statement_upper):
+                    logger.info(f"Skipping info statement #{i}: {statement[:50]}...")
                     continue
                 
                 try:
                     cursor.execute(statement)
+                    # Consume any results from SELECT statements
+                    if cursor.with_rows:
+                        cursor.fetchall()
                     connection.commit()
                     
                     # Log successful operations
                     if 'CREATE TABLE' in statement_upper:
                         table_name = statement.split('TABLE')[1].split('(')[0].strip().replace('IF NOT EXISTS', '').strip()
-                        logger.info(f"Created table: {table_name}")
+                        logger.info(f"✓ Statement #{i}: Created table '{table_name}'")
+                    elif 'DROP TABLE' in statement_upper:
+                        table_name = statement.split('TABLE')[1].strip().replace('IF EXISTS', '').strip()
+                        logger.info(f"✓ Statement #{i}: Dropped table '{table_name}'")
                     elif 'INSERT INTO' in statement_upper:
                         table_name = statement.split('INTO')[1].split('(')[0].strip().split()[0]
-                        logger.info(f"Inserted data into: {table_name}")
+                        logger.info(f"✓ Statement #{i}: Inserted data into '{table_name}'")
                     elif 'CREATE INDEX' in statement_upper:
-                        logger.info(f"Created index successfully")
+                        index_name = statement.split('INDEX')[1].split('ON')[0].strip()
+                        logger.info(f"✓ Statement #{i}: Created index '{index_name}'")
+                    else:
+                        logger.info(f"✓ Statement #{i}: Executed successfully")
+                        
                 except Error as e:
-                    logger.error(f"Error executing statement #{i}: {statement[:80]}... - {e}")
+                    logger.error(f"✗ Statement #{i} failed: {e}")
+                    logger.error(f"  Statement: {statement[:100]}...")
                     connection.rollback()
-                    # Continue with other statements even if one fails
+                    # Continue with other statements
                     continue
             
             logger.info("init_db.sql executed successfully")
             
             # Now execute app schema
-            with open(Config.DATABASE_DIR / 'app_schema.sql', 'r') as f:
+            with open(Config.DATABASE_DIR / 'app_schema.sql', 'r', encoding='utf-8') as f:
                 app_schema_script = f.read()
             
-            for statement in app_schema_script.split(';'):
-                statement = statement.strip()
-                if not statement or statement.startswith('--'):
+            # Remove comments and split by semicolon
+            lines = app_schema_script.split('\n')
+            clean_lines = []
+            for line in lines:
+                if '--' in line:
+                    line = line[:line.index('--')]
+                clean_lines.append(line)
+            
+            clean_script = '\n'.join(clean_lines)
+            statements = [s.strip() for s in clean_script.split(';') if s.strip()]
+            
+            logger.info(f"Processing {len(statements)} SQL statements from app_schema.sql")
+            
+            for i, statement in enumerate(statements, 1):
+                statement_upper = statement.upper()
+                
+                # Skip USE and SELECT info statements
+                if statement_upper.startswith('USE '):
+                    continue
+                if statement_upper.startswith('SELECT') and 'AS STATUS' in statement_upper:
                     continue
                 
                 try:
                     cursor.execute(statement)
+                    # Consume any results from SELECT statements
+                    if cursor.with_rows:
+                        cursor.fetchall()
                     connection.commit()
-                    if 'CREATE TABLE' in statement.upper():
+                    
+                    if 'CREATE TABLE' in statement_upper:
                         table_name = statement.split('TABLE')[1].split('(')[0].strip().replace('IF NOT EXISTS', '').strip()
-                        logger.info(f"Created app table: {table_name}")
+                        logger.info(f"✓ Statement #{i}: Created app table '{table_name}'")
+                    elif 'DROP TABLE' in statement_upper:
+                        table_name = statement.split('TABLE')[1].strip().replace('IF EXISTS', '').strip()
+                        logger.info(f"✓ Statement #{i}: Dropped app table '{table_name}'")
+                    elif 'INSERT INTO' in statement_upper:
+                        table_name = statement.split('INTO')[1].split('(')[0].strip().split()[0]
+                        logger.info(f"✓ Statement #{i}: Inserted data into '{table_name}'")
+                    else:
+                        logger.info(f"✓ Statement #{i}: Executed successfully")
+                        
                 except Error as e:
-                    logger.error(f"Error in app schema: {statement[:80]}... - {e}")
+                    logger.error(f"✗ App schema statement #{i} failed: {e}")
+                    logger.error(f"  Statement: {statement[:100]}...")
                     connection.rollback()
                     continue
             

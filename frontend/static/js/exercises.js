@@ -10,6 +10,9 @@ let questions = [];
 let userAnswers = [];
 let score = 0;
 let hintsUsed = 0;
+let startTime = null;
+let timerInterval = null;
+let isAnswerSubmitted = false;
 let progress = {
     beginner: { score: 0, completed: false },
     intermediate: { score: 0, completed: false },
@@ -36,6 +39,7 @@ function setupEventListeners() {
     document.getElementById('submit-answer-btn').addEventListener('click', submitAnswer);
     document.getElementById('hint-btn').addEventListener('click', showHint);
     document.getElementById('skip-btn').addEventListener('click', skipQuestion);
+    document.getElementById('exit-quiz-btn')?.addEventListener('click', exitQuiz);
     
     // Results buttons
     document.getElementById('try-again-btn').addEventListener('click', () => {
@@ -131,9 +135,14 @@ function startLevel(level) {
     score = 0;
     userAnswers = [];
     hintsUsed = 0;
+    isAnswerSubmitted = false;
     
     // Get questions for this level
     questions = EXERCISES[level];
+    
+    // Start timer
+    startTime = Date.now();
+    startTimer();
     
     // Hide level selection, show quiz
     document.getElementById('level-selection').classList.add('hidden');
@@ -147,9 +156,32 @@ function startLevel(level) {
     
     // Generate progress tracker
     generateProgressTracker();
+    updateProgressCounts();
     
     // Load first question
     loadQuestion(0);
+}
+
+// Start timer
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('timer').textContent = 
+            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Exit quiz
+function exitQuiz() {
+    if (confirm('Are you sure you want to exit? Your progress will be lost.')) {
+        if (timerInterval) clearInterval(timerInterval);
+        document.getElementById('quiz-area').classList.add('hidden');
+        document.getElementById('level-selection').classList.remove('hidden');
+    }
 }
 
 // Generate progress tracker dots
@@ -159,11 +191,23 @@ function generateProgressTracker() {
     
     for (let i = 0; i < questions.length; i++) {
         const dot = document.createElement('div');
-        dot.className = 'w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600';
+        dot.className = 'w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600 cursor-pointer hover:scale-110 transition-transform';
         dot.textContent = i + 1;
         dot.id = `progress-dot-${i}`;
+        dot.title = `Question ${i + 1}`;
         tracker.appendChild(dot);
     }
+}
+
+// Update progress counts
+function updateProgressCounts() {
+    const correct = userAnswers.filter(a => a && a.correct).length;
+    const incorrect = userAnswers.filter(a => a && !a.correct).length;
+    const remaining = questions.length - userAnswers.length;
+    
+    document.getElementById('correct-count').textContent = correct;
+    document.getElementById('incorrect-count').textContent = incorrect;
+    document.getElementById('remaining-count').textContent = remaining;
 }
 
 // Load a question
@@ -171,41 +215,47 @@ function loadQuestion(index) {
     currentQuestionIndex = index;
     const question = questions[index];
     hintsUsed = 0;
+    isAnswerSubmitted = false;
     
     // Update progress
     document.getElementById('current-q').textContent = index + 1;
+    document.getElementById('q-number').textContent = index + 1;
     document.getElementById('quiz-progress').style.width = `${((index + 1) / questions.length) * 100}%`;
     document.getElementById('current-score').textContent = score;
-    document.getElementById('percent-score').textContent = Math.round((score / questions.length) * 100);
     
     // Update progress dots
     document.querySelectorAll('#progress-tracker > div').forEach((dot, i) => {
         if (i < index) {
             // Past questions - show result
             if (userAnswers[i] && userAnswers[i].correct) {
-                dot.className = 'w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-xs font-bold text-white';
+                dot.className = 'w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-xs font-bold text-white cursor-pointer hover:scale-110 transition-transform';
             } else if (userAnswers[i]) {
-                dot.className = 'w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-xs font-bold text-white';
+                dot.className = 'w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-xs font-bold text-white cursor-pointer hover:scale-110 transition-transform';
             }
         } else if (i === index) {
             // Current question
-            dot.className = 'w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold text-white';
+            dot.className = 'w-8 h-8 rounded-full bg-blue-500 ring-4 ring-blue-200 flex items-center justify-center text-xs font-bold text-white animate-pulse';
         } else {
             // Future questions
-            dot.className = 'w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600';
+            dot.className = 'w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600 cursor-pointer hover:scale-110 transition-transform';
         }
     });
     
     // Display question
     document.getElementById('question-text').textContent = question.question;
     
-    // Clear feedback
-    document.getElementById('feedback-area').classList.add('hidden');
-    document.getElementById('feedback-area').innerHTML = '';
+    // Clear feedback and show submit button
+    const feedbackArea = document.getElementById('feedback-area');
+    feedbackArea.classList.add('hidden');
+    feedbackArea.innerHTML = '';
     
-    // Reset hints
+    // Reset buttons
+    const submitBtn = document.getElementById('submit-answer-btn');
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     document.getElementById('hints-remaining').textContent = '3';
     document.getElementById('hint-btn').disabled = false;
+    document.getElementById('skip-btn').disabled = false;
     
     // Generate answer area based on question type
     const answerArea = document.getElementById('answer-area');
@@ -214,27 +264,45 @@ function loadQuestion(index) {
     if (question.type === 'multiple-choice') {
         question.options.forEach((option, i) => {
             const div = document.createElement('div');
-            div.className = 'mb-3';
+            div.className = 'answer-option';
             div.innerHTML = `
-                <label class="flex items-center p-4 border-2 border-gray-300 rounded cursor-pointer hover:border-blue-500 transition">
-                    <input type="radio" name="answer" value="${i}" class="mr-3">
-                    <span class="text-gray-800">${option}</span>
+                <label class="flex items-start p-5 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group">
+                    <input type="radio" name="answer" value="${i}" class="mt-1 mr-4 w-5 h-5 text-blue-600">
+                    <span class="text-gray-800 text-lg flex-1 group-hover:text-blue-900">${option}</span>
                 </label>
             `;
             answerArea.appendChild(div);
+            
+            // Add click listener to label for better UX
+            div.querySelector('label').addEventListener('click', () => {
+                document.querySelectorAll('.answer-option label').forEach(l => {
+                    l.classList.remove('border-blue-500', 'bg-blue-50');
+                    l.classList.add('border-gray-200');
+                });
+                div.querySelector('label').classList.add('border-blue-500', 'bg-blue-50');
+                div.querySelector('label').classList.remove('border-gray-200');
+            });
         });
     } else if (question.type === 'fill-in-blank' || question.type === 'sql-query') {
         const textarea = document.createElement('textarea');
         textarea.id = 'answer-input';
-        textarea.className = 'w-full px-4 py-3 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500';
-        textarea.rows = question.type === 'sql-query' ? 6 : 3;
+        textarea.className = 'w-full px-5 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-mono';
+        textarea.rows = question.type === 'sql-query' ? 8 : 4;
         textarea.placeholder = question.type === 'sql-query' ? 'Write your SQL query here...' : 'Enter your answer...';
         answerArea.appendChild(textarea);
+        
+        // Focus on textarea
+        setTimeout(() => textarea.focus(), 100);
     }
+    
+    // Update counts
+    updateProgressCounts();
 }
 
 // Submit answer
 function submitAnswer() {
+    if (isAnswerSubmitted) return;
+    
     const question = questions[currentQuestionIndex];
     let userAnswer = null;
     let isCorrect = false;
@@ -243,7 +311,7 @@ function submitAnswer() {
     if (question.type === 'multiple-choice') {
         const selected = document.querySelector('input[name="answer"]:checked');
         if (!selected) {
-            alert('Please select an answer');
+            showToast('Please select an answer', 'warning');
             return;
         }
         userAnswer = parseInt(selected.value);
@@ -251,7 +319,7 @@ function submitAnswer() {
     } else if (question.type === 'fill-in-blank') {
         userAnswer = document.getElementById('answer-input').value.trim();
         if (!userAnswer) {
-            alert('Please enter an answer');
+            showToast('Please enter an answer', 'warning');
             return;
         }
         if (question.caseSensitive === false) {
@@ -262,7 +330,7 @@ function submitAnswer() {
     } else if (question.type === 'sql-query') {
         userAnswer = document.getElementById('answer-input').value.trim();
         if (!userAnswer) {
-            alert('Please write a SQL query');
+            showToast('Please write a SQL query', 'warning');
             return;
         }
         // Validate SQL query - check if it contains required keywords
@@ -280,34 +348,35 @@ function submitAnswer() {
         correct: isCorrect
     };
     
+    isAnswerSubmitted = true;
+    
     // Show feedback
     showFeedback(isCorrect, question);
     
     // Update score display
     document.getElementById('current-score').textContent = score;
-    document.getElementById('percent-score').textContent = Math.round((score / questions.length) * 100);
+    updateProgressCounts();
     
-    // Disable submit button
-    document.getElementById('submit-answer-btn').disabled = true;
+    // Disable submit button and inputs
+    const submitBtn = document.getElementById('submit-answer-btn');
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    document.getElementById('hint-btn').disabled = true;
+    document.getElementById('skip-btn').disabled = true;
     
-    // Show next question button or finish
-    const feedbackArea = document.getElementById('feedback-area');
-    if (currentQuestionIndex < questions.length - 1) {
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded hover:bg-blue-700 transition';
-        nextBtn.textContent = 'Next Question →';
-        nextBtn.addEventListener('click', () => {
+    // Disable answer inputs
+    document.querySelectorAll('input[name="answer"], #answer-input').forEach(input => {
+        input.disabled = true;
+    });
+    
+    // Auto-advance after 2.5 seconds
+    setTimeout(() => {
+        if (currentQuestionIndex < questions.length - 1) {
             loadQuestion(currentQuestionIndex + 1);
-            document.getElementById('submit-answer-btn').disabled = false;
-        });
-        feedbackArea.appendChild(nextBtn);
-    } else {
-        const finishBtn = document.createElement('button');
-        finishBtn.className = 'mt-4 w-full bg-green-600 text-white font-semibold py-3 px-6 rounded hover:bg-green-700 transition';
-        finishBtn.textContent = 'Finish Quiz';
-        finishBtn.addEventListener('click', showResults);
-        feedbackArea.appendChild(finishBtn);
-    }
+        } else {
+            showResults();
+        }
+    }, 2500);
 }
 
 // Validate SQL query
@@ -332,29 +401,49 @@ function showFeedback(isCorrect, question) {
     
     if (isCorrect) {
         feedbackArea.innerHTML = `
-            <div class="bg-green-50 border border-green-200 rounded p-4">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg p-6 shadow-lg animate-slideIn">
                 <div class="flex items-start">
-                    <svg class="w-6 h-6 text-green-600 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-                    </svg>
-                    <div>
-                        <p class="font-bold text-green-800 mb-1">✓ Correct!</p>
-                        <p class="text-sm text-green-700">${question.explanation}</p>
+                    <div class="flex-shrink-0">
+                        <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h4 class="text-xl font-bold text-green-800 mb-2">✓ Correct! Well done!</h4>
+                        <p class="text-green-700 leading-relaxed">${question.explanation}</p>
+                        <div class="mt-3 flex items-center text-sm text-green-600">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                            </svg>
+                            <span>Moving to next question...</span>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
     } else {
         feedbackArea.innerHTML = `
-            <div class="bg-red-50 border border-red-200 rounded p-4">
+            <div class="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-lg p-6 shadow-lg animate-slideIn">
                 <div class="flex items-start">
-                    <svg class="w-6 h-6 text-red-600 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/>
-                    </svg>
-                    <div>
-                        <p class="font-bold text-red-800 mb-1">✗ Incorrect</p>
-                        <p class="text-sm text-red-700 mb-2">${question.explanation}</p>
-                        ${question.type === 'fill-in-blank' ? `<p class="text-sm text-red-600">Correct answer: <strong>${question.correctAnswer}</strong></p>` : ''}
+                    <div class="flex-shrink-0">
+                        <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h4 class="text-xl font-bold text-red-800 mb-2">✗ Not quite right</h4>
+                        <p class="text-red-700 leading-relaxed mb-3">${question.explanation}</p>
+                        ${question.type === 'fill-in-blank' || question.type === 'sql-query' ? 
+                            `<div class="bg-white bg-opacity-70 rounded p-3 mt-2">
+                                <p class="text-sm text-red-600 font-semibold mb-1">Correct answer:</p>
+                                <p class="text-red-900 font-mono">${question.correctAnswer}</p>
+                            </div>` : ''}
+                        <div class="mt-3 flex items-center text-sm text-red-600">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                            </svg>
+                            <span>Moving to next question...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -375,9 +464,18 @@ function showHint() {
     const feedbackArea = document.getElementById('feedback-area');
     feedbackArea.classList.remove('hidden');
     feedbackArea.innerHTML = `
-        <div class="bg-yellow-50 border border-yellow-200 rounded p-4">
-            <p class="font-bold text-yellow-800 mb-1">💡 Hint ${hintsUsed}/3:</p>
-            <p class="text-sm text-yellow-700">${hint}</p>
+        <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-500 rounded-lg p-6 shadow-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="w-7 h-7 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h4 class="font-bold text-yellow-800 mb-2">💡 Hint ${hintsUsed}/3:</h4>
+                    <p class="text-yellow-700 leading-relaxed">${hint}</p>
+                </div>
+            </div>
         </div>
     `;
     
@@ -390,10 +488,15 @@ function showHint() {
 
 // Skip question
 function skipQuestion() {
+    if (isAnswerSubmitted) return;
+    
     userAnswers[currentQuestionIndex] = {
         answer: null,
         correct: false
     };
+    
+    isAnswerSubmitted = true;
+    updateProgressCounts();
     
     if (currentQuestionIndex < questions.length - 1) {
         loadQuestion(currentQuestionIndex + 1);
@@ -402,8 +505,33 @@ function skipQuestion() {
     }
 }
 
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-24 right-6 z-50 px-6 py-4 rounded-lg shadow-xl text-white font-semibold animate-slideIn`;
+    
+    if (type === 'warning') {
+        toast.classList.add('bg-yellow-500');
+    } else if (type === 'error') {
+        toast.classList.add('bg-red-500');
+    } else {
+        toast.classList.add('bg-blue-500');
+    }
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
 // Show results
 function showResults() {
+    // Stop timer
+    if (timerInterval) clearInterval(timerInterval);
+    
     // Update progress
     progress[currentLevel].score = score;
     progress[currentLevel].completed = true;
